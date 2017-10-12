@@ -1,27 +1,24 @@
 {
-  "name": "gobang",
+  "name": "like-web",
   "version": "1.0.0",
-  "description": "goBang-Game",
+  "description": "",
   "main": "server.js",
-  "dependencies": {
-    "fs": "^0.0.1-security",
-    "http": "^0.0.0",
-    "url": "^0.11.0",
-    "vue": "^2.0.8"
-  },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/NovaYuan/gobang.git"
-  },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/NovaYuan/gobang/issues"
+  "devDependencies": {
+    "express": "^4.15.3",
+    "http": "0.0.0",
+    "http-proxy-middleware": "^0.17.4",
+    "path": "^0.12.7",
+    "socket.io": "^2.0.3",
+    "url": "^0.11.0",
+    "ws": "^3.2.0"
   },
-  "homepage": "https://github.com/NovaYuan/gobang#readme"
+  "dependencies": {
+    "vue-router": "^2.7.0"
+  }
 }

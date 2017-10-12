@@ -1,42 +1,115 @@
 /**
- * Created by yuan on 2016/2/23.
+ * Created by yuanqiujuan on 2017/7/18.
  */
 'use strict';
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
+var url = require('url'),
+    path = require('path'),
+    express = require('express'),
+    http = require('http'),
+    proxy = require('http-proxy-middleware'),
+    app = express(),
+    server = http.createServer(app),
+    io = require("socket.io").listen(server),
+    port = 8991;
 
-// 创建服务器
-http.createServer( function (request, response) {
-    // 解析请求，包括文件名
-    var pathname = url.parse(request.url).pathname;
+//监听端口
+server.listen(port);
 
-    // 输出请求的文件名
-    if(pathname == "/"){
-        pathname = "/index.html"
-    }
-    // 从文件系统中读取请求的文件内容
-    fs.readFile(pathname.substr(1), "binary", function (err, data) {
-        if (err) {
-            response.writeHead(404, {'Content-Type': 'text/html'});
+app.use(function (err, req, res, next) {
+    console.log(err.stack);
+    res.render(500, err.stack);
+});
+
+//读取静态资源
+app.use('/static', express.static(__dirname + '/static'));
+app.use(express.static(__dirname));
+
+//websocket监听
+var rooms = {};
+
+io.on('connection', function (socket) {
+    socket.on("join", function (roomid) {
+        rooms[roomid] = {
+            num: rooms[roomid] ? rooms[roomid].num + 1 : 1,
+            totalDot: rooms[roomid] ? rooms[roomid].totalDot : [],
+            blackDot: rooms[roomid] ? rooms[roomid].blackDot : [],
+            whiteDot: rooms[roomid] ? rooms[roomid].whiteDot : []
+        };
+
+        if(rooms[roomid].num > 2){
+            socket.emit("warning", "这个房间已满人，请输入别的房间")
         }else{
-            if(pathname.indexOf('.css') != -1){
-                //response.writeHead(200, {'Content-Type': 'text/css'});
-                response.setHeader('Content-Type', 'text/css')
-            }else if(pathname.indexOf('.woff') != -1) {
-                response.setHeader('Content-Type', 'text/woff')
-            }else {
-                response.writeHead(200, {'Content-Type': 'text/html'});
-            }
-
-            // 响应文件内容
-            //response.end(data.toString());
-            response.write(data, "binary");
+            socket.emit("success", {
+                msg: "进入成功",
+                id: rooms[roomid].num
+            })
         }
-        //  发送响应数据
-        response.end();
-    });
-}).listen(8080);
 
-// 控制台会输出以下信息
-console.log('Server running at http://127.0.0.1:8080/');
+        socket.broadcast.emit('news', {dotinfo: rooms[roomid]})
+    });
+
+    socket.on('isAllinRoom', function (roomid) {
+        socket.emit('isAllinRoomResult', {result: rooms[roomid].num === 2});
+        socket.broadcast.emit('isAllinRoomResult', {result: rooms[roomid].num === 2})
+    });
+
+
+    socket.on("message", function(message){
+        if(message.isRevert){
+            rooms[message.roomid].totalDot.splice(rooms[message.roomid].totalDot.length - 1, 1);
+        }else if(message.isReset){
+            rooms[message.roomid].totalDot.splice(0, rooms[message.roomid].totalDot.length);
+        }else{
+            rooms[message.roomid].totalDot.push(message.dot);
+        }
+
+        switch (message.color){
+            case "black":
+                if(message.isRevert){
+                    rooms[message.roomid].blackDot.splice(rooms[message.roomid].blackDot.length - 1, 1);
+                }else if(message.isReset){
+                    rooms[message.roomid].blackDot.splice(0, rooms[message.roomid].blackDot.length)
+                }else{
+                    rooms[message.roomid].blackDot.push(message.dot);
+                }
+                break;
+            case "white":
+                if(message.isRevert){
+                    rooms[message.roomid].whiteDot.splice(rooms[message.roomid].whiteDot.length - 1, 1);
+                }else if(message.isReset){
+                    rooms[message.roomid].whiteDot.splice(0, rooms[message.roomid].whiteDot.length)
+                }else{
+                    rooms[message.roomid].whiteDot.push(message.dot);
+                }
+                break;
+        }
+
+        socket.broadcast.emit('news', {dotinfo: message})
+    });
+
+    socket.on('disconnect', function () {
+        socket.emit("warning", "对方已退出房间，请重新创建加入");
+
+        setTimeout(function () {
+            delete rooms[getCookie("Gobang_roomid")];
+        }, 2000)
+    });
+
+  //获取cookie
+    function getCookie(c_name) {
+        var c_start, c_end;
+
+        if (socket.request.headers.cookie){
+            if (socket.request.headers.cookie.length > 0) {
+                c_start = socket.request.headers.cookie.indexOf(c_name + "=");
+                if (c_start != -1) {
+                    c_start = c_start + c_name.length + 1;
+                    c_end = socket.request.headers.cookie.indexOf(";", c_start);
+                    if (c_end == -1) c_end = socket.request.headers.cookie.length;
+                    return unescape(socket.request.headers.cookie.substring(c_start, c_end))
+                }
+            }
+        }
+        return ""
+    }
+});
