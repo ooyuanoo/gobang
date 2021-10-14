@@ -1,37 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-    <title>canvas-learn</title>
-    <link href="css/index.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>canvas-learn</title>
+  <link href="css/index.css" rel="stylesheet">
 </head>
 <body>
 <div class="head hide" id="head">
-    <!--<button type="button" class="reset" onclick="five.resetPick()" disabled>重来</button>-->
-    <!--<button type="button" class="revert" onclick="five.revertPick()" disabled>撤销</button>-->
-    <p class="text-center">当前到 <span id="chess-user"></span> 下</p>
+  <!--<button type="button" class="reset" onclick="five.resetPick()" disabled>重来</button>-->
+  <!--<button type="button" class="revert" onclick="five.revertPick()" disabled>撤销</button>-->
+  <p class="text-center">当前到 <span id="chess-user"></span> 下</p>
 </div>
 <canvas id="my-canvas">您的浏览器不支持canvas,请升级</canvas>
 <canvas id="chess-canvas">您的浏览器不支持canvas,请升级</canvas>
 
 <div class="notice-mask hide notice-1" id="notice-1">
-    <div class="notice">
-        <span class="close" onclick="five.closeModal('notice-1')">&times;</span>
-        <p id="notice-text"></p>
-    </div>
+  <div class="notice">
+    <span class="close" onclick="five.closeModal('notice-1')">&times;</span>
+    <p id="notice-text"></p>
+  </div>
 </div>
 
 <div class="notice-mask show notice-2">
-    <div class="notice room-id">
-        <div class="btn-group clearfix">
-            <p id="warning-message" class="message hide"></p>
-            <p id="success-message" class="message hide"></p>
-            <input type="number" id="input-num" class="input input-num pull-left" placeholder="请输入房间号" onkeyup="five.hideMessage()"/>
-            <button type="button" class="btn btn-green pull-left" onclick="five.setRoom()">进入</button>
-        </div>
-        <button type="button" class="btn btn-blue" onclick="five.closeModal('notice-2')">不输入房间号，离线玩</button>
+  <div class="notice room-id">
+    <div class="btn-group clearfix">
+      <p id="warning-message" class="message hide"></p>
+      <p id="success-message" class="message hide"></p>
+      <input type="number" id="input-num" class="input input-num pull-left" placeholder="请输入房间号"
+             onkeyup="five.hideMessage()"/>
+      <button type="button" class="btn btn-green pull-left" onclick="five.setRoom()">进入</button>
     </div>
+    <button type="button" class="btn btn-blue" onclick="five.closeModal('notice-2')">不输入房间号，离线玩</button>
+  </div>
 </div>
 <script src="/node_modules/socket.io-client/dist/socket.io.js"></script>
 <script src="js/index.js?v=1"></script>
